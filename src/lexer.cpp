@@ -104,29 +104,11 @@ ccc::BuiltinTypeAutomaton::~BuiltinTypeAutomaton()
 
 ccc::IntLiteralAutomaton::IntLiteralAutomaton()
 {
-	transitionTable['0'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['0'][0] = 0;
-
-	transitionTable['1'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['1'][0] = 0;
-	transitionTable['2'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['2'][0] = 0;
-	transitionTable['3'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['3'][0] = 0;
-	transitionTable['4'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['4'][0] = 0;
-	transitionTable['5'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['5'][0] = 0;
-	transitionTable['6'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['6'][0] = 0;
-	transitionTable['7'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['7'][0] = 0;
-	transitionTable['8'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['8'][0] = 0;
-	transitionTable['9'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['9'][0] = 0;
-
-	acceptingStates.insert(0);
+	for (char i = '0'; i <= '9'; ++i) {
+		transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
+		transitionTable[i][0] = 1;
+	}
+	acceptingStates.insert(1);
 }
 
 ccc::Terminal ccc::IntLiteralAutomaton::getTerminal()
@@ -292,19 +274,18 @@ ccc::StringLiteralAutomaton::~StringLiteralAutomaton()
 ccc::IdAutomaton::IdAutomaton()
 {
 	for (char i = 48; i < 58; ++i) {
-		transitionTable[i][0] = 1;
-		transitionTable[i][1] = 1;
+		transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
+		transitionTable[i][0] = 0;
 	}
 	for (char i = 65; i < 91; ++i) {
-		transitionTable[i][0] = 1;
-		transitionTable[i][1] = 1;
+		transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
+		transitionTable[i][0] = 0;
 	}
 	for (char i = 97; i < 123; ++i) {
-		transitionTable[i][0] = 1;
-		transitionTable[i][1] = 1;
+		transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
+		transitionTable[i][0] = 0;
 	}
-
-	acceptingStates.insert(1);
+	acceptingStates.insert(0);
 }
 
 ccc::Terminal ccc::IdAutomaton::getTerminal()
@@ -377,12 +358,9 @@ void ccc::Lexer::run()
 		for (FiniteAutomaton* dfa = automata[j]; j < automata.size(); dfa = automata[++j]) {
 			int starting = i;
 			while (dfa->transition(inputBuffer[i])) {
-				/* std::cout<<"inputBuffer["<<i<<"] = "<<inputBuffer[i]<<std::endl; */
-				if (i == fstream.gcount() - 2) {
-					if (fstream.eof()) {
-						++i;
-						break;
-					}
+				std::cout << "i: " << i << ", j: " << j << "\n"
+						  << std::flush;
+				if (i == fstream.gcount() - 2 && !fstream.eof()) {
 					//perhaps an error if above we check for the last char maybe then eof will not be set, read the docs
 					//extract gcount to a readable variable
 					//reloads the buffer, maybe extract it
@@ -391,6 +369,9 @@ void ccc::Lexer::run()
 					//extract 4096 to a macro or variable named buffer_size
 					fstream.read(inputBuffer + end, 4096 - end);
 					i = end;
+				} else if (i == fstream.gcount() - 2) {
+					++i;
+					break;
 				} else
 					++i;
 			}
@@ -400,7 +381,7 @@ void ccc::Lexer::run()
 					dfa->getTerminal()));
 				--i;
 				//or maybe have a func resetDFA
-				//or move to dfa somehow
+				//or move to dfa somehow e.g. transition doing this when it returns false
 				dfa->currentState = 0;
 				break;
 			}
@@ -412,4 +393,3 @@ void ccc::Lexer::run()
 		}
 	}
 }
-
