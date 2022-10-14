@@ -1,8 +1,11 @@
 #include "lexer.h"
+#include <cwchar>
 #include <iostream>
 #include <memory>
 #include <string.h>
 #include <unordered_map>
+
+#define INPUT_BUFFER_SIZE 4096
 
 ccc::Token::Token(std::string lexeme, Terminal term)
 	: lexeme(lexeme)
@@ -31,8 +34,8 @@ bool ccc::FiniteAutomaton::transition(char input)
 }
 
 ccc::FiniteAutomaton::FiniteAutomaton()
+	: currentState(0)
 {
-	currentState = 0;
 }
 
 ccc::FiniteAutomaton::~FiniteAutomaton()
@@ -41,6 +44,7 @@ ccc::FiniteAutomaton::~FiniteAutomaton()
 
 ccc::OperatorAutomaton::OperatorAutomaton()
 {
+	transitionTable.reserve(8);
 	transitionTable['<'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['<'][0] = 1;
 	transitionTable['>'] = std::unordered_map<unsigned int, unsigned int>();
@@ -59,6 +63,7 @@ ccc::OperatorAutomaton::OperatorAutomaton()
 	transitionTable['*'][0] = 3;
 	transitionTable['/'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['/'][0] = 3;
+
 	acceptingStates.insert(1);
 	acceptingStates.insert(2);
 	acceptingStates.insert(3);
@@ -75,6 +80,7 @@ ccc::Terminal ccc::OperatorAutomaton::getTerminal()
 
 ccc::BuiltinTypeAutomaton::BuiltinTypeAutomaton()
 {
+	transitionTable.reserve(7);
 	transitionTable['i'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['i'][0] = 1;
 	transitionTable['n'] = std::unordered_map<unsigned int, unsigned int>();
@@ -104,10 +110,13 @@ ccc::BuiltinTypeAutomaton::~BuiltinTypeAutomaton()
 
 ccc::IntLiteralAutomaton::IntLiteralAutomaton()
 {
+	transitionTable.reserve(10);
 	for (char i = '0'; i <= '9'; ++i) {
 		transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
 		transitionTable[i][0] = 1;
+		transitionTable[i][1] = 1;
 	}
+
 	acceptingStates.insert(1);
 }
 
@@ -122,49 +131,15 @@ ccc::IntLiteralAutomaton::~IntLiteralAutomaton()
 
 ccc::FloatLiteralAutomaton::FloatLiteralAutomaton()
 {
-	transitionTable['0'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['0'][0] = 0;
-
-	transitionTable['1'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['1'][0] = 0;
-	transitionTable['2'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['2'][0] = 0;
-	transitionTable['3'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['3'][0] = 0;
-	transitionTable['4'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['4'][0] = 0;
-	transitionTable['5'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['5'][0] = 0;
-	transitionTable['6'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['6'][0] = 0;
-	transitionTable['7'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['7'][0] = 0;
-	transitionTable['8'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['8'][0] = 0;
-	transitionTable['9'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['9'][0] = 0;
+	transitionTable.reserve(10);
+	for (char i = '0'; i <= '9'; ++i) {
+		transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
+		transitionTable[i][0] = 0;
+		transitionTable[i][1] = 2;
+		transitionTable[i][2] = 2;
+	}
 	transitionTable['.'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['.'][0] = 1;
-	transitionTable['0'][1] = 2;
-	transitionTable['1'][1] = 2;
-	transitionTable['2'][1] = 2;
-	transitionTable['3'][1] = 2;
-	transitionTable['4'][1] = 2;
-	transitionTable['5'][1] = 2;
-	transitionTable['6'][1] = 2;
-	transitionTable['7'][1] = 2;
-	transitionTable['8'][1] = 2;
-	transitionTable['9'][1] = 2;
-	transitionTable['0'][2] = 2;
-	transitionTable['1'][2] = 2;
-	transitionTable['2'][2] = 2;
-	transitionTable['3'][2] = 2;
-	transitionTable['4'][2] = 2;
-	transitionTable['5'][2] = 2;
-	transitionTable['6'][2] = 2;
-	transitionTable['7'][2] = 2;
-	transitionTable['8'][2] = 2;
-	transitionTable['9'][2] = 2;
 
 	acceptingStates.insert(2);
 }
@@ -199,7 +174,6 @@ ccc::ScopeAutomaton::ScopeAutomaton()
 {
 	transitionTable['{'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['{'][0] = 1;
-
 	transitionTable['}'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['}'][0] = 1;
 
@@ -217,19 +191,17 @@ ccc::ScopeAutomaton::~ScopeAutomaton()
 
 ccc::ControlFlowAutomaton::ControlFlowAutomaton()
 {
+	transitionTable.reserve(7);
 	transitionTable['i'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['i'][0] = 1;
-
 	transitionTable['f'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['f'][1] = 2;
 	transitionTable['w'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['w'][0] = 3;
-
 	transitionTable['h'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['h'][3] = 4;
 	transitionTable['i'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['i'][4] = 5;
-
 	transitionTable['l'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['l'][5] = 6;
 	transitionTable['e'] = std::unordered_map<unsigned int, unsigned int>();
@@ -249,10 +221,10 @@ ccc::ControlFlowAutomaton::~ControlFlowAutomaton()
 
 ccc::StringLiteralAutomaton::StringLiteralAutomaton()
 {
+	transitionTable.reserve(95);
 	transitionTable['"'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['"'][0] = 1;
 	transitionTable['"'][1] = 2;
-
 	for (char i = 32; i < 127; ++i) {
 		if (i == '"')
 			continue;
@@ -273,19 +245,23 @@ ccc::StringLiteralAutomaton::~StringLiteralAutomaton()
 
 ccc::IdAutomaton::IdAutomaton()
 {
+	transitionTable.reserve(62);
 	for (char i = 48; i < 58; ++i) {
 		transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
-		transitionTable[i][0] = 0;
+		transitionTable[i][0] = 1;
+		transitionTable[i][1] = 1;
 	}
 	for (char i = 65; i < 91; ++i) {
 		transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
-		transitionTable[i][0] = 0;
+		transitionTable[i][0] = 1;
+		transitionTable[i][1] = 1;
 	}
 	for (char i = 97; i < 123; ++i) {
 		transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
-		transitionTable[i][0] = 0;
+		transitionTable[i][0] = 1;
+		transitionTable[i][1] = 1;
 	}
-	acceptingStates.insert(0);
+	acceptingStates.insert(1);
 }
 
 ccc::Terminal ccc::IdAutomaton::getTerminal()
@@ -297,47 +273,61 @@ ccc::IdAutomaton::~IdAutomaton()
 {
 }
 
-ccc::Lexer::Lexer(std::string& filePath, std::vector<Token*>& sharedBuffer)
+ccc::Lexer::Lexer(std::vector<Token*>& sharedBuffer)
 	: sharedBuffer(sharedBuffer)
 {
-	fstream.open(filePath);
-	if (!fstream.is_open()) {
-		std::cout << "Invalid file\n";
-		//set error
-	}
-	inputBuffer = new char[4096];
-	/* inputBuffer2.reserve(4096); */
 	//only one of the following two for now
-	reservedWords["while"] = Terminal::CONTROL_FLOW;
-	reservedWords["for"] = Terminal::CONTROL_FLOW;
-	reservedWords["if"] = Terminal::CONTROL_FLOW;
-	reservedWords["int"] = Terminal::BUILTIN_TYPE;
-	reservedWords["float"] = Terminal::BUILTIN_TYPE;
+	/* reservedWords["while"] = Terminal::CONTROL_FLOW; */
+	/* reservedWords["for"] = Terminal::CONTROL_FLOW; */
+	/* reservedWords["if"] = Terminal::CONTROL_FLOW; */
+	/* reservedWords["int"] = Terminal::BUILTIN_TYPE; */
+	/* reservedWords["float"] = Terminal::BUILTIN_TYPE; */
 	//todo char and pointers
-	reservedWords["<"] = Terminal::OPERATOR;
-	reservedWords[">"] = Terminal::OPERATOR;
-	reservedWords[">="] = Terminal::OPERATOR;
-	reservedWords["<="] = Terminal::OPERATOR;
-	reservedWords["=="] = Terminal::OPERATOR;
-	reservedWords["="] = Terminal::OPERATOR;
-	reservedWords["+"] = Terminal::OPERATOR;
-	reservedWords["-"] = Terminal::OPERATOR;
-	reservedWords["*"] = Terminal::OPERATOR;
-	reservedWords["/"] = Terminal::OPERATOR;
-	reservedWords[";"] = Terminal::SEMICOLON;
-	reservedWords["{"] = Terminal::SCOPE;
-	reservedWords["}"] = Terminal::SCOPE;
+	/* reservedWords["<"] = Terminal::OPERATOR; */
+	/* reservedWords[">"] = Terminal::OPERATOR; */
+	/* reservedWords[">="] = Terminal::OPERATOR; */
+	/* reservedWords["<="] = Terminal::OPERATOR; */
+	/* reservedWords["=="] = Terminal::OPERATOR; */
+	/* reservedWords["="] = Terminal::OPERATOR; */
+	/* reservedWords["+"] = Terminal::OPERATOR; */
+	/* reservedWords["-"] = Terminal::OPERATOR; */
+	/* reservedWords["*"] = Terminal::OPERATOR; */
+	/* reservedWords["/"] = Terminal::OPERATOR; */
+	/* reservedWords[";"] = Terminal::SEMICOLON; */
+	/* reservedWords["{"] = Terminal::SCOPE; */
+	/* reservedWords["}"] = Terminal::SCOPE; */
 }
 
 ccc::Lexer::~Lexer()
 {
-	delete inputBuffer;
 }
 
-void ccc::Lexer::run()
+void ccc::Lexer::setFile(std::string filePath)
 {
-	//inout buffer local variable so you can call run on different files
-	//TODO: make vector of smart instead of raw pointers
+	this->filePath=filePath;
+}
+
+static void reloadInputBuffer(unsigned long long& current, unsigned long long starting, unsigned long long& numReadChars, char*& inputBuffer, std::ifstream& file)
+{
+	unsigned long long end = current - starting + 1;
+	memcpy(inputBuffer, inputBuffer + starting, end);
+	file.read(inputBuffer + end, INPUT_BUFFER_SIZE - end);
+	numReadChars = end + file.gcount() - 1;
+	current = end;
+}
+
+bool ccc::Lexer::run()
+{
+	//TODO: dedicated error codes instead of bool
+	std::ifstream file;
+	file.open(filePath);
+	if (!file.is_open())
+		return false;
+
+	char* inputBuffer = new char[INPUT_BUFFER_SIZE];
+	file.read(inputBuffer, INPUT_BUFFER_SIZE);
+	unsigned long long numReadChars = file.gcount() - 1;
+
 	std::vector<FiniteAutomaton*> automata {
 		new StringLiteralAutomaton(),
 		new BuiltinTypeAutomaton(),
@@ -350,46 +340,37 @@ void ccc::Lexer::run()
 		new IdAutomaton()
 	};
 
-	fstream.read(inputBuffer, 4096);
-	for (int i = 0; i < fstream.gcount() - 1; ++i) {
+	for (unsigned long long i = 0; i < numReadChars; ++i) {
 		if (inputBuffer[i] == ' ' || inputBuffer[i] == '\t' || inputBuffer[i] == '\n')
 			continue;
-		int j = 0;
-		for (FiniteAutomaton* dfa = automata[j]; j < automata.size(); dfa = automata[++j]) {
-			int starting = i;
+		FiniteAutomaton* dfa;
+		for (FiniteAutomaton* dfa : automata) {
+			unsigned long long starting = i;
 			while (dfa->transition(inputBuffer[i])) {
-				std::cout << "i: " << i << ", j: " << j << "\n"
-						  << std::flush;
-				if (i == fstream.gcount() - 2 && !fstream.eof()) {
-					//perhaps an error if above we check for the last char maybe then eof will not be set, read the docs
-					//extract gcount to a readable variable
-					//reloads the buffer, maybe extract it
-					int end = i - starting + 1;
-					memcpy(inputBuffer, inputBuffer + starting, end);
-					//extract 4096 to a macro or variable named buffer_size
-					fstream.read(inputBuffer + end, 4096 - end);
-					i = end;
-				} else if (i == fstream.gcount() - 2) {
-					++i;
+				if (i == numReadChars - 1 && !file.eof())
+					reloadInputBuffer(i, starting, numReadChars, inputBuffer, file);
+				else if (i++ == numReadChars - 1)
 					break;
-				} else
-					++i;
 			}
 			if (dfa->acceptingStates.find(dfa->currentState) != dfa->acceptingStates.end()) {
 				sharedBuffer.emplace_back(new Token(
 					std::string(inputBuffer + starting, i - starting) /* Copy elision */,
 					dfa->getTerminal()));
 				--i;
-				//or maybe have a func resetDFA
-				//or move to dfa somehow e.g. transition doing this when it returns false
 				dfa->currentState = 0;
 				break;
 			}
 			dfa->currentState = 0;
-			//if not id automaton
-			//when will the id automaton fail?
-			if (j != automata.size() - 1)
-				i = starting;
+			if (dfa->getTerminal()==Terminal::ID)
+				return false;
+			i = starting;
 		}
 	}
+
+	file.close();
+	delete[] inputBuffer;
+	for (FiniteAutomaton* dfa : automata)
+		delete dfa;
+
+	return true;
 }

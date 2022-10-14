@@ -34,6 +34,7 @@ class FiniteAutomaton {
 public:
 	bool transition(char input);
 	virtual Terminal getTerminal() = 0;
+	virtual ~FiniteAutomaton();
 
 	unsigned int currentState;
 	std::unordered_set<unsigned int> acceptingStates;
@@ -41,7 +42,6 @@ public:
 protected:
 	std::unordered_map<char, std::unordered_map<unsigned int, unsigned int>> transitionTable;
 	FiniteAutomaton();
-	virtual ~FiniteAutomaton();
 };
 
 class OperatorAutomaton : public FiniteAutomaton {
@@ -109,17 +109,16 @@ public:
 
 class Lexer {
 public:
-	Lexer(std::string& filePath, std::vector<Token*>& sharedBuffer);
-	void run();
+	Lexer(std::vector<Token*>& sharedBuffer);
+	void setFile(std::string filePath);
+	bool run();
 	~Lexer();
 
 private:
 	std::vector<Token*>& sharedBuffer;
 	std::unordered_map<std::string, Terminal> reservedWords;
 	/* Only ASCII for now */
-	//or maybe string or raw char array
-	char* inputBuffer;
-	std::ifstream fstream;
+	std::string filePath;
 };
 
 }
