@@ -13,7 +13,9 @@ enum class Terminal {
 	ID,
 	BUILTIN_TYPE,
 	CONTROL_FLOW,
-	OPERATOR,
+	ARITHMETIC_OP,
+	LOGICAL_OP,
+	ASSIGNMENT_OP,
 	INT_LITERAL,
 	FLOAT_LITERAL,
 	STRING_LITERAL,
@@ -44,11 +46,25 @@ protected:
 	FiniteAutomaton();
 };
 
-class OperatorAutomaton : public FiniteAutomaton {
+class ArithmeticOpAutomaton : public FiniteAutomaton {
 public:
 	Terminal getTerminal() override;
-	OperatorAutomaton();
-	~OperatorAutomaton();
+	ArithmeticOpAutomaton();
+	~ArithmeticOpAutomaton();
+};
+
+class LogicalOpAutomaton : public FiniteAutomaton {
+public:
+	Terminal getTerminal() override;
+	LogicalOpAutomaton();
+	~LogicalOpAutomaton();
+};
+
+class AssignmentOpAutomaton : public FiniteAutomaton {
+public:
+	Terminal getTerminal() override;
+	AssignmentOpAutomaton();
+	~AssignmentOpAutomaton();
 };
 
 class BuiltinTypeAutomaton : public FiniteAutomaton {
@@ -110,15 +126,13 @@ public:
 class Lexer {
 public:
 	Lexer(std::vector<Token*>& sharedBuffer);
-	void setFile(std::string filePath);
-	bool run();
+	/* Only ASCII for now */
+	bool run(std::string filePath);
 	~Lexer();
 
 private:
 	std::vector<Token*>& sharedBuffer;
 	std::unordered_map<std::string, Terminal> reservedWords;
-	/* Only ASCII for now */
-	std::string filePath;
 };
 
 }

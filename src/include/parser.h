@@ -9,6 +9,7 @@ enum class Type {
 	FLOAT,
 	POINTER
 };
+
 class Symbol {
 public:
 	Symbol(Type type, std::string& lexeme);
@@ -20,5 +21,11 @@ public:
 	Type type;
 	std::string lexeme;
 };
+
+class Parser{
+
+};
+
+class 
 
 }

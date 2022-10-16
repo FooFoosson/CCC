@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include "include/lexer.h"
 #include <cwchar>
 #include <iostream>
 #include <memory>
@@ -42,40 +43,72 @@ ccc::FiniteAutomaton::~FiniteAutomaton()
 {
 }
 
-ccc::OperatorAutomaton::OperatorAutomaton()
+ccc::ArithmeticOpAutomaton::ArithmeticOpAutomaton()
 {
-	transitionTable.reserve(8);
+	transitionTable.reserve(4);
+	transitionTable['+'] = std::unordered_map<unsigned int, unsigned int>();
+	transitionTable['+'][0] = 1;
+	transitionTable['-'] = std::unordered_map<unsigned int, unsigned int>();
+	transitionTable['-'][0] = 1;
+	transitionTable['*'] = std::unordered_map<unsigned int, unsigned int>();
+	transitionTable['*'][0] = 1;
+	transitionTable['/'] = std::unordered_map<unsigned int, unsigned int>();
+	transitionTable['/'][0] = 1;
+
+	acceptingStates.insert(1);
+}
+
+ccc::ArithmeticOpAutomaton::~ArithmeticOpAutomaton()
+{
+}
+
+ccc::Terminal ccc::ArithmeticOpAutomaton::getTerminal()
+{
+	return Terminal::ARITHMETIC_OP;
+}
+
+ccc::LogicalOpAutomaton::LogicalOpAutomaton()
+{
+	transitionTable.reserve(4);
 	transitionTable['<'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['<'][0] = 1;
 	transitionTable['>'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['>'][0] = 1;
-	transitionTable['='] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['='][0] = 1;
-	transitionTable['='][1] = 2;
-	transitionTable['='][4] = 2;
 	transitionTable['!'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['!'][0] = 4;
-	transitionTable['+'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['+'][0] = 3;
-	transitionTable['-'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['-'][0] = 3;
-	transitionTable['*'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['*'][0] = 3;
-	transitionTable['/'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['/'][0] = 3;
+	transitionTable['!'][0] = 3;
+	transitionTable['='] = std::unordered_map<unsigned int, unsigned int>();
+	transitionTable['='][0] = 3;
+	transitionTable['='][1] = 2;
+	transitionTable['='][3] = 2;
 
 	acceptingStates.insert(1);
 	acceptingStates.insert(2);
-	acceptingStates.insert(3);
 }
 
-ccc::OperatorAutomaton::~OperatorAutomaton()
+ccc::LogicalOpAutomaton::~LogicalOpAutomaton()
 {
 }
 
-ccc::Terminal ccc::OperatorAutomaton::getTerminal()
+ccc::Terminal ccc::LogicalOpAutomaton::getTerminal()
 {
-	return Terminal::OPERATOR;
+	return Terminal::LOGICAL_OP;
+}
+
+ccc::AssignmentOpAutomaton::AssignmentOpAutomaton()
+{
+	transitionTable['='] = std::unordered_map<unsigned int, unsigned int>();
+	transitionTable['='][0] = 1;
+
+	acceptingStates.insert(1);
+}
+
+ccc::AssignmentOpAutomaton::~AssignmentOpAutomaton()
+{
+}
+
+ccc::Terminal ccc::AssignmentOpAutomaton::getTerminal()
+{
+	return Terminal::ASSIGNMENT_OP;
 }
 
 ccc::BuiltinTypeAutomaton::BuiltinTypeAutomaton()
@@ -302,11 +335,6 @@ ccc::Lexer::~Lexer()
 {
 }
 
-void ccc::Lexer::setFile(std::string filePath)
-{
-	this->filePath=filePath;
-}
-
 static void reloadInputBuffer(unsigned long long& current, unsigned long long starting, unsigned long long& numReadChars, char*& inputBuffer, std::ifstream& file)
 {
 	unsigned long long end = current - starting + 1;
@@ -316,7 +344,7 @@ static void reloadInputBuffer(unsigned long long& current, unsigned long long st
 	current = end;
 }
 
-bool ccc::Lexer::run()
+bool ccc::Lexer::run(std::string filePath)
 {
 	//TODO: dedicated error codes instead of bool
 	std::ifstream file;
@@ -334,7 +362,9 @@ bool ccc::Lexer::run()
 		new SemicolonAutomaton,
 		new ScopeAutomaton,
 		new ControlFlowAutomaton(),
-		new OperatorAutomaton(),
+		new ArithmeticOpAutomaton(),
+		new LogicalOpAutomaton(),
+		new AssignmentOpAutomaton(),
 		new FloatLiteralAutomaton(),
 		new IntLiteralAutomaton(),
 		new IdAutomaton()

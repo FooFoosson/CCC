@@ -1,0 +1,5 @@
+E -> E'S
+S -> +E'S | -E'S | epsilon {if !epsilon output + or - nodes}
+E' -> TF
+F -> *TF | /TF | epsilon {if !epsilon output * or / nodes}
+T -> id | literal | (E) {output id or literal or ( ) nodes}
