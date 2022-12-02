@@ -3,3 +3,15 @@ S -> +E'S | -E'S | epsilon {if !epsilon output + or - nodes}
 E' -> TF
 F -> *TF | /TF | epsilon {if !epsilon output * or / nodes}
 T -> id | literal | (E) {output id or literal or ( ) nodes}
+
+FIRST(E) = id, literal, (
+FIRST(S) = +, -, epsilon
+FIRST(E') = id, literal, (
+FIRST(F) = *, /, epsilon
+FIRST(T) = id, literal, (
+
+FOLLOW(E) = $, )
+FOLLOW(S) = $, )
+FOLLOW(E') = +, -, $, )
+FOLLOW(F) = +, -, $, )
+FOLLOW(T) = *, /, +, -, $, )

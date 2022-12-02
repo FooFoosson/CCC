@@ -6,28 +6,40 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <queue>
 
 namespace ccc {
 
 enum class Terminal {
 	ID,
-	BUILTIN_TYPE,
+	BUILTIN_TYPE_INT,
+	BUILTIN_TYPE_FLOAT,
+	BUILTIN_TYPE_CHAR,
 	CONTROL_FLOW,
-	ARITHMETIC_OP,
+	ARITHMETIC_OP_PLUS,
+	ARITHMETIC_OP_MINUS,
+	ARITHMETIC_OP_MULT,
+	ARITHMETIC_OP_DIV,
 	LOGICAL_OP,
 	ASSIGNMENT_OP,
 	INT_LITERAL,
 	FLOAT_LITERAL,
 	STRING_LITERAL,
 	SEMICOLON,
-	SCOPE
+	OPEN_SCOPE,
+	CLOSED_SCOPE,
+	OPENING_BRACKET,
+	CLOSING_BRACKET,
+	FILE_END,
+	ERROR
 };
 
-class Token {
-public:
+struct Token {
 	Token(std::string lexeme, Terminal term);
 	bool operator==(Token& other) const;
+	static std::unordered_map<Terminal, std::string> terminalNames;
 	~Token();
+
 	std::string lexeme;
 	Terminal term;
 };
@@ -40,10 +52,9 @@ public:
 
 	unsigned int currentState;
 	std::unordered_set<unsigned int> acceptingStates;
-
 protected:
-	std::unordered_map<char, std::unordered_map<unsigned int, unsigned int>> transitionTable;
 	FiniteAutomaton();
+	std::unordered_map<char, std::unordered_map<unsigned int, unsigned int>> transitionTable;
 };
 
 class ArithmeticOpAutomaton : public FiniteAutomaton {
@@ -95,6 +106,13 @@ public:
 	~ScopeAutomaton();
 };
 
+class BracketAutomaton : public FiniteAutomaton {
+public:
+	Terminal getTerminal() override;
+	BracketAutomaton();
+	~BracketAutomaton();
+};
+
 class SemicolonAutomaton : public FiniteAutomaton {
 public:
 	Terminal getTerminal() override;
@@ -125,14 +143,13 @@ public:
 
 class Lexer {
 public:
-	Lexer(std::vector<Token*>& sharedBuffer);
+	Lexer();
 	/* Only ASCII for now */
-	bool run(std::string filePath);
+	bool run(std::string filePath, std::queue<Token*>& sharedBuffer);
 	~Lexer();
 
 private:
-	std::vector<Token*>& sharedBuffer;
-	std::unordered_map<std::string, Terminal> reservedWords;
+	/* std::unordered_map<std::string, Terminal> reservedWords; */
 };
 
 }

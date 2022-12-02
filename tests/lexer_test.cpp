@@ -1,12 +1,16 @@
 #include "lexer.h"
+#include "parser.h"
 #include <iostream>
 
 int main(){
-	std::vector<ccc::Token*> foo;
-	std::string file="../tests/lexer_test_file.txt";
-	ccc::Lexer l(foo);
-	l.setFile(file);
-	l.run();
-	for(ccc::Token* f:foo)
-		std::cout<<f->lexeme<<std::endl;
+	std::queue<ccc::Token*> foo;
+	std::string file="../tests/parser_test_file.txt";
+	ccc::Lexer l;
+	l.run(file, foo);
+	/* while(!foo.empty()){ */
+		/* std::cout<<foo.front()->lexeme<<std::endl; */
+		/* foo.pop(); */
+	/* } */
+	ccc::LL1Parser p(foo);
+	p.parsingAlgorithm();
 }

@@ -1,5 +1,4 @@
 #include "lexer.h"
-#include "include/lexer.h"
 #include <cwchar>
 #include <iostream>
 #include <memory>
@@ -13,6 +12,29 @@ ccc::Token::Token(std::string lexeme, Terminal term)
 	, term(term)
 {
 }
+
+std::unordered_map<ccc::Terminal, std::string> ccc::Token::terminalNames={
+	{Terminal::ID, "id"}, 
+	{Terminal::INT_LITERAL, "int literal"},
+	{Terminal::FLOAT_LITERAL, "float literal"},
+	{Terminal::STRING_LITERAL, "string literal"},
+	{Terminal::BUILTIN_TYPE_INT, "int"},
+ 	{Terminal::BUILTIN_TYPE_FLOAT, "float"},
+ 	{Terminal::BUILTIN_TYPE_CHAR, "char"},
+ 	{Terminal::CONTROL_FLOW, "if"},
+ 	{Terminal::ARITHMETIC_OP_PLUS, "+"},
+ 	{Terminal::ARITHMETIC_OP_MINUS, "-"},
+ 	{Terminal::ARITHMETIC_OP_MULT, "*"},
+ 	{Terminal::ARITHMETIC_OP_DIV, "/"},
+ 	{Terminal::LOGICAL_OP, "logop"},
+ 	{Terminal::ASSIGNMENT_OP, "="},
+	{Terminal::SEMICOLON, ";"},
+	{Terminal::OPEN_SCOPE, "{"},
+ 	{Terminal::CLOSED_SCOPE, "}"},
+ 	{Terminal::OPENING_BRACKET, "("},
+ 	{Terminal::CLOSING_BRACKET, ")"},
+ 	{Terminal::FILE_END, "eof"}
+};
 
 ccc::Token::~Token()
 {
@@ -49,13 +71,16 @@ ccc::ArithmeticOpAutomaton::ArithmeticOpAutomaton()
 	transitionTable['+'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['+'][0] = 1;
 	transitionTable['-'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['-'][0] = 1;
+	transitionTable['-'][0] = 2;
 	transitionTable['*'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['*'][0] = 1;
+	transitionTable['*'][0] = 3;
 	transitionTable['/'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['/'][0] = 1;
+	transitionTable['/'][0] = 4;
 
 	acceptingStates.insert(1);
+	acceptingStates.insert(2);
+	acceptingStates.insert(3);
+	acceptingStates.insert(4);
 }
 
 ccc::ArithmeticOpAutomaton::~ArithmeticOpAutomaton()
@@ -64,7 +89,18 @@ ccc::ArithmeticOpAutomaton::~ArithmeticOpAutomaton()
 
 ccc::Terminal ccc::ArithmeticOpAutomaton::getTerminal()
 {
-	return Terminal::ARITHMETIC_OP;
+	switch(currentState){
+	case 1:
+		return Terminal::ARITHMETIC_OP_PLUS;
+	case 2:
+		return Terminal::ARITHMETIC_OP_MINUS;
+	case 3:
+		return Terminal::ARITHMETIC_OP_MULT;
+	case 4:
+		return Terminal::ARITHMETIC_OP_DIV;
+	default:
+		return Terminal::ERROR;
+	}
 }
 
 ccc::LogicalOpAutomaton::LogicalOpAutomaton()
@@ -127,14 +163,23 @@ ccc::BuiltinTypeAutomaton::BuiltinTypeAutomaton()
 	transitionTable['o'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['o'][5] = 6;
 	transitionTable['a'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['a'][6] = 2;
+	transitionTable['a'][6] = 7;
+	transitionTable['t'][7] = 8;
 
 	acceptingStates.insert(3);
+	acceptingStates.insert(8);
 }
 
 ccc::Terminal ccc::BuiltinTypeAutomaton::getTerminal()
 {
-	return Terminal::BUILTIN_TYPE;
+	switch (currentState) {
+	case 3:
+		return Terminal::BUILTIN_TYPE_INT;
+	case 8:
+		return Terminal::BUILTIN_TYPE_FLOAT;
+	default:
+		return Terminal::ERROR;
+	}
 }
 
 ccc::BuiltinTypeAutomaton::~BuiltinTypeAutomaton()
@@ -208,17 +253,52 @@ ccc::ScopeAutomaton::ScopeAutomaton()
 	transitionTable['{'] = std::unordered_map<unsigned int, unsigned int>();
 	transitionTable['{'][0] = 1;
 	transitionTable['}'] = std::unordered_map<unsigned int, unsigned int>();
-	transitionTable['}'][0] = 1;
+	transitionTable['}'][0] = 2;
 
 	acceptingStates.insert(1);
+	acceptingStates.insert(2);
 }
 
 ccc::Terminal ccc::ScopeAutomaton::getTerminal()
 {
-	return Terminal::SCOPE;
+	switch(currentState){
+		case 1:
+			return Terminal::OPEN_SCOPE;
+		case 2:
+			return Terminal::CLOSED_SCOPE;
+		default:
+			return Terminal::ERROR;
+	}
 }
 
 ccc::ScopeAutomaton::~ScopeAutomaton()
+{
+}
+
+ccc::BracketAutomaton::BracketAutomaton()
+{
+	transitionTable['('] = std::unordered_map<unsigned int, unsigned int>();
+	transitionTable['('][0] = 1;
+	transitionTable[')'] = std::unordered_map<unsigned int, unsigned int>();
+	transitionTable[')'][0] = 2;
+
+	acceptingStates.insert(1);
+	acceptingStates.insert(2);
+}
+
+ccc::Terminal ccc::BracketAutomaton::getTerminal()
+{
+	switch(currentState){
+		case 1:
+			return Terminal::OPENING_BRACKET;
+		case 2:
+			return Terminal::CLOSING_BRACKET;
+		default:
+			return Terminal::ERROR;
+	}
+}
+
+ccc::BracketAutomaton::~BracketAutomaton()
 {
 }
 
@@ -306,8 +386,7 @@ ccc::IdAutomaton::~IdAutomaton()
 {
 }
 
-ccc::Lexer::Lexer(std::vector<Token*>& sharedBuffer)
-	: sharedBuffer(sharedBuffer)
+ccc::Lexer::Lexer()
 {
 	//only one of the following two for now
 	/* reservedWords["while"] = Terminal::CONTROL_FLOW; */
@@ -344,7 +423,7 @@ static void reloadInputBuffer(unsigned long long& current, unsigned long long st
 	current = end;
 }
 
-bool ccc::Lexer::run(std::string filePath)
+bool ccc::Lexer::run(std::string filePath, std::queue<Token*>& sharedBuffer)
 {
 	//TODO: dedicated error codes instead of bool
 	std::ifstream file;
@@ -383,7 +462,7 @@ bool ccc::Lexer::run(std::string filePath)
 					break;
 			}
 			if (dfa->acceptingStates.find(dfa->currentState) != dfa->acceptingStates.end()) {
-				sharedBuffer.emplace_back(new Token(
+				sharedBuffer.push(new Token(
 					std::string(inputBuffer + starting, i - starting) /* Copy elision */,
 					dfa->getTerminal()));
 				--i;
@@ -391,11 +470,12 @@ bool ccc::Lexer::run(std::string filePath)
 				break;
 			}
 			dfa->currentState = 0;
-			if (dfa->getTerminal()==Terminal::ID)
+			if (dfa->getTerminal() == Terminal::ID)
 				return false;
 			i = starting;
 		}
 	}
+	sharedBuffer.push(new Token("eof", Terminal::FILE_END));
 
 	file.close();
 	delete[] inputBuffer;
