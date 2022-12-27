@@ -2,154 +2,171 @@
 #include "globals.h"
 #include <cmath>
 #include <fstream>
+#include <queue>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include <queue>
 
 namespace ccc {
 
 enum class Terminal {
-	ID,
-	BUILTIN_TYPE_INT,
-	BUILTIN_TYPE_FLOAT,
-	BUILTIN_TYPE_CHAR,
-	CONTROL_FLOW,
-	ARITHMETIC_OP_PLUS,
-	ARITHMETIC_OP_MINUS,
-	ARITHMETIC_OP_MULT,
-	ARITHMETIC_OP_DIV,
-	LOGICAL_OP,
-	ASSIGNMENT_OP,
-	INT_LITERAL,
-	FLOAT_LITERAL,
-	STRING_LITERAL,
-	SEMICOLON,
-	OPEN_SCOPE,
-	CLOSED_SCOPE,
-	OPENING_BRACKET,
-	CLOSING_BRACKET,
-	FILE_END,
-	ERROR
+    ID,
+    BUILTIN_TYPE_INT,
+    BUILTIN_TYPE_FLOAT,
+    BUILTIN_TYPE_CHAR,
+    CONTROL_FLOW_BRANCH,
+    CONTROL_FLOW_WHILE,
+    ARITHMETIC_OP_PLUS,
+    ARITHMETIC_OP_MINUS,
+    ARITHMETIC_OP_MULT,
+    ARITHMETIC_OP_DIV,
+    LOGICAL_OP,
+    ASSIGNMENT_OP,
+    INT_LITERAL,
+    FLOAT_LITERAL,
+    STRING_LITERAL,
+    SEMICOLON,
+    OPEN_SCOPE,
+    CLOSED_SCOPE,
+    OPENING_BRACKET,
+    CLOSING_BRACKET,
+    FILE_END,
+    NON_TERMINAL,
+    ERROR
 };
 
 struct Token {
-	Token(std::string lexeme, Terminal term);
-	bool operator==(Token& other) const;
-	static std::unordered_map<Terminal, std::string> terminalNames;
-	~Token();
+    Token(std::string lexeme, Terminal term);
+    Token(const Token& other) = default;
+    Token(Token&& other) = default;
+    Token& operator=(const Token& other) = default;
+    Token& operator=(Token&& other) = default;
+    ~Token()=default;
 
-	std::string lexeme;
-	Terminal term;
+    bool operator==(const Token& other) const;
+    static std::unordered_map<Terminal, std::string> terminalNames;
+
+    std::string lexeme;
+    Terminal term;
 };
 
 class FiniteAutomaton {
 public:
-	bool transition(char input);
-	virtual Terminal getTerminal() = 0;
-	virtual ~FiniteAutomaton();
+    virtual ~FiniteAutomaton()=default;
 
-	unsigned int currentState;
-	std::unordered_set<unsigned int> acceptingStates;
+    bool transition(char input);
+    virtual Terminal getTerminal() = 0;
+
+    unsigned int currentState;
+    std::unordered_set<unsigned int> acceptingStates;
 protected:
-	FiniteAutomaton();
-	std::unordered_map<char, std::unordered_map<unsigned int, unsigned int>> transitionTable;
+    FiniteAutomaton();
+    std::unordered_map<char, std::unordered_map<unsigned int, unsigned int>> transitionTable;
 };
 
 class ArithmeticOpAutomaton : public FiniteAutomaton {
 public:
-	Terminal getTerminal() override;
-	ArithmeticOpAutomaton();
-	~ArithmeticOpAutomaton();
+    ArithmeticOpAutomaton();
+    ~ArithmeticOpAutomaton()=default;
+
+    Terminal getTerminal() override;
 };
 
 class LogicalOpAutomaton : public FiniteAutomaton {
 public:
-	Terminal getTerminal() override;
-	LogicalOpAutomaton();
-	~LogicalOpAutomaton();
+    LogicalOpAutomaton();
+    ~LogicalOpAutomaton()=default;
+
+    Terminal getTerminal() override;
 };
 
 class AssignmentOpAutomaton : public FiniteAutomaton {
 public:
-	Terminal getTerminal() override;
-	AssignmentOpAutomaton();
-	~AssignmentOpAutomaton();
+    AssignmentOpAutomaton();
+    ~AssignmentOpAutomaton()=default;
+
+    Terminal getTerminal() override;
 };
 
 class BuiltinTypeAutomaton : public FiniteAutomaton {
 public:
-	Terminal getTerminal() override;
-	BuiltinTypeAutomaton();
-	~BuiltinTypeAutomaton();
+    BuiltinTypeAutomaton();
+    ~BuiltinTypeAutomaton()=default;
+
+    Terminal getTerminal() override;
 };
 
 class ControlFlowAutomaton : public FiniteAutomaton {
 public:
-	Terminal getTerminal() override;
-	ControlFlowAutomaton();
-	~ControlFlowAutomaton();
+    ControlFlowAutomaton();
+    ~ControlFlowAutomaton()=default;
+
+    Terminal getTerminal() override;
 };
 
 class StringLiteralAutomaton : public FiniteAutomaton {
 public:
-	Terminal getTerminal() override;
-	StringLiteralAutomaton();
-	~StringLiteralAutomaton();
+    StringLiteralAutomaton();
+    ~StringLiteralAutomaton()=default;
+
+    Terminal getTerminal() override;
 };
 
 class ScopeAutomaton : public FiniteAutomaton {
 public:
-	Terminal getTerminal() override;
-	ScopeAutomaton();
-	~ScopeAutomaton();
+    ScopeAutomaton();
+    ~ScopeAutomaton()=default;
+
+    Terminal getTerminal() override;
 };
 
 class BracketAutomaton : public FiniteAutomaton {
 public:
-	Terminal getTerminal() override;
-	BracketAutomaton();
-	~BracketAutomaton();
+    BracketAutomaton();
+    ~BracketAutomaton()=default;
+
+    Terminal getTerminal() override;
 };
 
 class SemicolonAutomaton : public FiniteAutomaton {
 public:
-	Terminal getTerminal() override;
-	SemicolonAutomaton();
-	~SemicolonAutomaton();
+    SemicolonAutomaton();
+    ~SemicolonAutomaton()=default;
+
+    Terminal getTerminal() override;
 };
 
 class IntLiteralAutomaton : public FiniteAutomaton {
 public:
-	Terminal getTerminal() override;
-	IntLiteralAutomaton();
-	~IntLiteralAutomaton();
+    IntLiteralAutomaton();
+    ~IntLiteralAutomaton()=default;
+
+    Terminal getTerminal() override;
 };
 
 class FloatLiteralAutomaton : public FiniteAutomaton {
 public:
-	Terminal getTerminal() override;
-	FloatLiteralAutomaton();
-	~FloatLiteralAutomaton();
+    FloatLiteralAutomaton();
+    ~FloatLiteralAutomaton()=default;
+
+    Terminal getTerminal() override;
 };
 
 class IdAutomaton : public FiniteAutomaton {
 public:
-	Terminal getTerminal() override;
-	IdAutomaton();
-	~IdAutomaton();
+    IdAutomaton();
+    ~IdAutomaton()=default;
+
+    Terminal getTerminal() override;
 };
 
 class Lexer {
 public:
-	Lexer();
-	/* Only ASCII for now */
-	bool run(std::string filePath, std::queue<Token*>& sharedBuffer);
-	~Lexer();
-
-private:
-	/* std::unordered_map<std::string, Terminal> reservedWords; */
+    Lexer();
+    ~Lexer()=default;
+    /* Only ASCII for now */
+    bool run(std::string filePath, std::queue<Token*>& sharedBuffer);
 };
 
 }
