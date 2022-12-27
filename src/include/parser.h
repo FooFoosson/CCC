@@ -6,48 +6,101 @@
 namespace ccc {
 
 enum class Type {
-	FUNC,
-	INT,
-	FLOAT,
+    FUNC,
+    INT,
+    FLOAT,
+    CHAR,
+    STRING,
+    INT_PTR,
+    FLOAT_PTR,
+    CHAR_PTR,
+    STRING_PTR,
 };
 
-class AST{
-
+enum class Scope {
+    STATIC,
+    EXTERN,
+    AUTO
 };
 
 struct Symbol {
-	Symbol(Type type, std::string lexeme);
-	bool operator==(Symbol& other) const
-	{
-		return other.lexeme == lexeme;
-	}
+    Symbol(Type type, Scope scope);
+    Symbol(const Symbol& other) = default;
+    Symbol(Symbol&& other) = default;
+    Symbol& operator=(const Symbol& other) = default;
+    Symbol& operator=(Symbol&& other) = default;
+    ~Symbol() = default;
 
-	Type type;
-	std::string lexeme;
+    Type type;
+    Scope scope;
+};
+
+class SymbolTable {
+public:
+    SymbolTable();
+    ~SymbolTable();
+
+    bool lookup(std::string& symbolName, Symbol& outSymbol);
+    bool insert(std::string& symbolName, Symbol& symbol);
+    void addScope();
+    void removeScope();
+
+private:
+    std::stack<std::unordered_map<std::string, Symbol>*> symbols;
+    std::stack<std::unordered_map<std::string, Symbol>*> helperStack;
+};
+
+class SyntaxTree {
+public:
+    SyntaxTree();
+    ~SyntaxTree();
+
+    bool insert(const std::string& parentNonTerminal, const std::vector<Token>& tokens);
+
+    class SyntaxTreeNode {
+    public:
+        SyntaxTreeNode(Token val);
+        ~SyntaxTreeNode();
+
+        Token val;
+        SyntaxTreeNode* next;
+        SyntaxTreeNode* children;
+    };
+    SyntaxTreeNode* root;
+
+private:
+    std::unordered_map<std::string, std::stack<SyntaxTreeNode*>> nonTerminalsToNodes;
 };
 
 /* Each compilation unit should have their own Parser instance */
 class Parser {
 public:
-	virtual bool parsingAlgorithm()=0;
-protected:
-	Parser(std::queue<Token*>& sharedBuffer);
-	//is this helper method different for each parser type?
-	void expandProduction(std::string& grammarSymbol, Terminal term);
-	void continueGrammarMatching(size_t& i);
+    virtual ~Parser() = default;
 
-	//need a default symbol constructor or store pointers instead
-	/* std::unordered_set<Symbol> symbolTable; */
-	std::queue<Token*>& sharedBuffer;
-	/* Maps non-terminals to a map which maps terminals to productions */
-	std::unordered_map<std::string, std::unordered_map<Terminal, std::vector<std::string>>> parsingTable;
-	std::stack<std::string> grammarSymbols;
+    virtual bool parsingAlgorithm(SyntaxTree& res) = 0;
+
+protected:
+    Parser(std::queue<Token*>& sharedBuffer);
+
+    /* void addToSymbolTable(Token& token); */
+    SymbolTable symbolTable;
+    std::queue<Token*>& sharedBuffer;
+    /* Maps non-terminals to a map which maps terminals to productions */
+    std::unordered_map<std::string, std::unordered_map<Terminal, std::vector<std::string>>> parsingTable;
+    std::stack<std::string> grammarSymbols;
+    std::unordered_set<std::string> terminals;
 };
 
 class LL1Parser : public Parser {
 public:
-	LL1Parser(std::queue<Token*>& sharedBuffer);
-	bool parsingAlgorithm() override;
+    LL1Parser(std::queue<Token*>& sharedBuffer);
+    ~LL1Parser() = default;
+
+    bool parsingAlgorithm(SyntaxTree& res) override;
+
+private:
+    void continueGrammarMatching();
+    void expandProduction(SyntaxTree& st);
 };
 
 }
