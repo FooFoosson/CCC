@@ -25,11 +25,6 @@ enum class Scope {
 
 struct Symbol {
     Symbol(Type type, Scope scope);
-    Symbol(const Symbol& other) = default;
-    Symbol(Symbol&& other) = default;
-    Symbol& operator=(const Symbol& other) = default;
-    Symbol& operator=(Symbol&& other) = default;
-    ~Symbol() = default;
 
     Type type;
     Scope scope;
@@ -94,7 +89,6 @@ protected:
 class LL1Parser : public Parser {
 public:
     LL1Parser(std::queue<Token*>& sharedBuffer);
-    ~LL1Parser() = default;
 
     bool parsingAlgorithm(SyntaxTree& res) override;
 

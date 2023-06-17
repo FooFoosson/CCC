@@ -38,11 +38,6 @@ enum class Terminal {
 
 struct Token {
     Token(std::string lexeme, Terminal term);
-    Token(const Token& other) = default;
-    Token(Token&& other) = default;
-    Token& operator=(const Token& other) = default;
-    Token& operator=(Token&& other) = default;
-    ~Token()=default;
 
     bool operator==(const Token& other) const;
     static std::unordered_map<Terminal, std::string> terminalNames;
@@ -68,7 +63,6 @@ protected:
 class ArithmeticOpAutomaton : public FiniteAutomaton {
 public:
     ArithmeticOpAutomaton();
-    ~ArithmeticOpAutomaton()=default;
 
     Terminal getTerminal() override;
 };
@@ -76,7 +70,6 @@ public:
 class LogicalOpAutomaton : public FiniteAutomaton {
 public:
     LogicalOpAutomaton();
-    ~LogicalOpAutomaton()=default;
 
     Terminal getTerminal() override;
 };
@@ -84,7 +77,6 @@ public:
 class AssignmentOpAutomaton : public FiniteAutomaton {
 public:
     AssignmentOpAutomaton();
-    ~AssignmentOpAutomaton()=default;
 
     Terminal getTerminal() override;
 };
@@ -92,7 +84,6 @@ public:
 class BuiltinTypeAutomaton : public FiniteAutomaton {
 public:
     BuiltinTypeAutomaton();
-    ~BuiltinTypeAutomaton()=default;
 
     Terminal getTerminal() override;
 };
@@ -100,7 +91,6 @@ public:
 class ControlFlowAutomaton : public FiniteAutomaton {
 public:
     ControlFlowAutomaton();
-    ~ControlFlowAutomaton()=default;
 
     Terminal getTerminal() override;
 };
@@ -108,7 +98,6 @@ public:
 class StringLiteralAutomaton : public FiniteAutomaton {
 public:
     StringLiteralAutomaton();
-    ~StringLiteralAutomaton()=default;
 
     Terminal getTerminal() override;
 };
@@ -116,7 +105,6 @@ public:
 class ScopeAutomaton : public FiniteAutomaton {
 public:
     ScopeAutomaton();
-    ~ScopeAutomaton()=default;
 
     Terminal getTerminal() override;
 };
@@ -124,7 +112,6 @@ public:
 class BracketAutomaton : public FiniteAutomaton {
 public:
     BracketAutomaton();
-    ~BracketAutomaton()=default;
 
     Terminal getTerminal() override;
 };
@@ -132,7 +119,6 @@ public:
 class SemicolonAutomaton : public FiniteAutomaton {
 public:
     SemicolonAutomaton();
-    ~SemicolonAutomaton()=default;
 
     Terminal getTerminal() override;
 };
@@ -140,7 +126,6 @@ public:
 class IntLiteralAutomaton : public FiniteAutomaton {
 public:
     IntLiteralAutomaton();
-    ~IntLiteralAutomaton()=default;
 
     Terminal getTerminal() override;
 };
@@ -148,7 +133,6 @@ public:
 class FloatLiteralAutomaton : public FiniteAutomaton {
 public:
     FloatLiteralAutomaton();
-    ~FloatLiteralAutomaton()=default;
 
     Terminal getTerminal() override;
 };
@@ -156,7 +140,6 @@ public:
 class IdAutomaton : public FiniteAutomaton {
 public:
     IdAutomaton();
-    ~IdAutomaton()=default;
 
     Terminal getTerminal() override;
 };
@@ -164,7 +147,6 @@ public:
 class Lexer {
 public:
     Lexer();
-    ~Lexer()=default;
     /* Only ASCII for now */
     bool run(std::string filePath, std::queue<Token*>& sharedBuffer);
 };
