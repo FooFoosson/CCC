@@ -20,7 +20,7 @@ ccc::SymbolTable::~SymbolTable()
 
 void ccc::SymbolTable::addScope()
 {
-    symbols.push(new std::unordered_map<std::string, Symbol>());
+    symbols.push(new std::unordered_map<std::string, Symbol> {});
 }
 
 void ccc::SymbolTable::removeScope()
