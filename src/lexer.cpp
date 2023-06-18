@@ -61,14 +61,14 @@ ccc::FiniteAutomaton::FiniteAutomaton()
 ccc::ArithmeticOpAutomaton::ArithmeticOpAutomaton()
 {
     transitionTable.reserve(4);
-    transitionTable['+'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['+'][0] = 1;
-    transitionTable['-'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['-'][0] = 2;
-    transitionTable['*'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['*'][0] = 3;
-    transitionTable['/'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['/'][0] = 4;
+    transitionTable.emplace('+', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['+'].emplace(0, 1);
+    transitionTable.emplace('-', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['-'].emplace(0, 2);
+    transitionTable.emplace('*', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['*'].emplace(0, 3);
+    transitionTable.emplace('/', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['/'].emplace(0, 4);
 
     acceptingStates.insert(1);
     acceptingStates.insert(2);
@@ -95,16 +95,16 @@ ccc::Terminal ccc::ArithmeticOpAutomaton::getTerminal()
 ccc::LogicalOpAutomaton::LogicalOpAutomaton()
 {
     transitionTable.reserve(4);
-    transitionTable['<'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['<'][0] = 1;
-    transitionTable['>'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['>'][0] = 1;
-    transitionTable['!'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['!'][0] = 3;
-    transitionTable['='] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['='][0] = 3;
-    transitionTable['='][1] = 2;
-    transitionTable['='][3] = 2;
+    transitionTable.emplace('<', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['<'].emplace(0, 1);
+    transitionTable.emplace('>', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['>'].emplace(0, 1);
+    transitionTable.emplace('!', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['!'].emplace(0, 3);
+    transitionTable.emplace('=', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['='].emplace(0, 3);
+    transitionTable['='].emplace(1, 2);
+    transitionTable['='].emplace(3, 2);
 
     acceptingStates.insert(1);
     acceptingStates.insert(2);
@@ -117,8 +117,8 @@ ccc::Terminal ccc::LogicalOpAutomaton::getTerminal()
 
 ccc::AssignmentOpAutomaton::AssignmentOpAutomaton()
 {
-    transitionTable['='] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['='][0] = 1;
+    transitionTable.emplace('=', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['='].emplace(0, 1);
 
     acceptingStates.insert(1);
 }
@@ -132,28 +132,28 @@ ccc::BuiltinTypeAutomaton::BuiltinTypeAutomaton()
 {
     // add spaces so it isn't confused with identifiers
     transitionTable.reserve(10);
-    transitionTable['i'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['i'][0] = 1;
-    transitionTable['n'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['n'][1] = 2;
-    transitionTable['t'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['t'][2] = 3;
-    transitionTable['f'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['f'][0] = 4;
-    transitionTable['l'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['l'][4] = 5;
-    transitionTable['o'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['o'][5] = 6;
-    transitionTable['a'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['a'][6] = 7;
-    transitionTable['t'][7] = 8;
-    transitionTable['c'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['c'][0] = 9;
-    transitionTable['h'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['h'][9] = 10;
-    transitionTable['a'][10] = 11;
-    transitionTable['r'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['r'][11] = 12;
+    transitionTable.emplace('i', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['i'].emplace(0, 1);
+    transitionTable.emplace('n', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['n'].emplace(1, 2);
+    transitionTable.emplace('t', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['t'].emplace(2, 3);
+    transitionTable.emplace('f', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['f'].emplace(0, 4);
+    transitionTable.emplace('l', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['l'].emplace(4, 5);
+    transitionTable.emplace('o', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['o'].emplace(5, 6);
+    transitionTable.emplace('a', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['a'].emplace(6, 7);
+    transitionTable['t'].emplace(7, 8);
+    transitionTable.emplace('c', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['c'].emplace(0, 9);
+    transitionTable.emplace('h', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['h'].emplace(9, 10);
+    transitionTable['a'].emplace(10, 11);
+    transitionTable.emplace('r', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['r'].emplace(11, 12);
 
     acceptingStates.insert(3);
     acceptingStates.insert(8);
@@ -178,9 +178,9 @@ ccc::IntLiteralAutomaton::IntLiteralAutomaton()
 {
     transitionTable.reserve(10);
     for (char i = '0'; i <= '9'; ++i) {
-        transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
-        transitionTable[i][0] = 1;
-        transitionTable[i][1] = 1;
+        transitionTable.emplace(i, std::unordered_map<unsigned int, unsigned int>());
+        transitionTable[i].emplace(0, 1);
+        transitionTable[i].emplace(1, 1);
     }
 
     acceptingStates.insert(1);
@@ -195,13 +195,13 @@ ccc::FloatLiteralAutomaton::FloatLiteralAutomaton()
 {
     transitionTable.reserve(10);
     for (char i = '0'; i <= '9'; ++i) {
-        transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
-        transitionTable[i][0] = 0;
-        transitionTable[i][1] = 2;
-        transitionTable[i][2] = 2;
+        transitionTable.emplace(i, std::unordered_map<unsigned int, unsigned int>());
+        transitionTable[i].emplace(0, 0);
+        transitionTable[i].emplace(1, 2);
+        transitionTable[i].emplace(2, 2);
     }
-    transitionTable['.'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['.'][0] = 1;
+    transitionTable.emplace('.', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['.'].emplace(0, 1);
 
     acceptingStates.insert(2);
 }
@@ -213,8 +213,8 @@ ccc::Terminal ccc::FloatLiteralAutomaton::getTerminal()
 
 ccc::SemicolonAutomaton::SemicolonAutomaton()
 {
-    transitionTable[';'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable[';'][0] = 1;
+    transitionTable.emplace(';', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable[';'].emplace(0, 1);
 
     acceptingStates.insert(1);
 }
@@ -226,10 +226,10 @@ ccc::Terminal ccc::SemicolonAutomaton::getTerminal()
 
 ccc::ScopeAutomaton::ScopeAutomaton()
 {
-    transitionTable['{'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['{'][0] = 1;
-    transitionTable['}'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['}'][0] = 2;
+    transitionTable.emplace('{', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['{'].emplace(0, 1);
+    transitionTable.emplace('}', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['}'].emplace(0, 2);
 
     acceptingStates.insert(1);
     acceptingStates.insert(2);
@@ -249,10 +249,10 @@ ccc::Terminal ccc::ScopeAutomaton::getTerminal()
 
 ccc::BracketAutomaton::BracketAutomaton()
 {
-    transitionTable['('] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['('][0] = 1;
-    transitionTable[')'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable[')'][0] = 2;
+    transitionTable.emplace('(', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['('].emplace(0, 1);
+    transitionTable.emplace(')', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable[')'].emplace(0, 2);
 
     acceptingStates.insert(1);
     acceptingStates.insert(2);
@@ -273,20 +273,20 @@ ccc::Terminal ccc::BracketAutomaton::getTerminal()
 ccc::ControlFlowAutomaton::ControlFlowAutomaton()
 {
     transitionTable.reserve(7);
-    transitionTable['i'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['i'][0] = 1;
-    transitionTable['f'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['f'][1] = 2;
-    transitionTable['w'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['w'][0] = 3;
-    transitionTable['h'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['h'][3] = 4;
-    transitionTable['i'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['i'][4] = 5;
-    transitionTable['l'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['l'][5] = 6;
-    transitionTable['e'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['e'][6] = 7;
+    transitionTable.emplace('i', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['i'].emplace(0, 1);
+    transitionTable.emplace('f', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['f'].emplace(1, 2);
+    transitionTable.emplace('w', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['w'].emplace(0, 3);
+    transitionTable.emplace('h', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['h'].emplace(3, 4);
+    transitionTable.emplace('i', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['i'].emplace(4, 5);
+    transitionTable.emplace('l', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['l'].emplace(5, 6);
+    transitionTable.emplace('e', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['e'].emplace(6, 7);
 
     acceptingStates.insert(2);
     acceptingStates.insert(7);
@@ -307,13 +307,13 @@ ccc::Terminal ccc::ControlFlowAutomaton::getTerminal()
 ccc::StringLiteralAutomaton::StringLiteralAutomaton()
 {
     transitionTable.reserve(95);
-    transitionTable['"'] = std::unordered_map<unsigned int, unsigned int>();
-    transitionTable['"'][0] = 1;
-    transitionTable['"'][1] = 2;
+    transitionTable.emplace('"', std::unordered_map<unsigned int, unsigned int>());
+    transitionTable['"'].emplace(0, 1);
+    transitionTable['"'].emplace(1, 2);
     for (char i = 32; i < 127; ++i) {
         if (i == '"')
             continue;
-        transitionTable[i][1] = 1;
+        transitionTable[i].emplace(1, 1);
     }
 
     acceptingStates.insert(2);
@@ -328,19 +328,19 @@ ccc::IdAutomaton::IdAutomaton()
 {
     transitionTable.reserve(62);
     for (char i = 48; i < 58; ++i) {
-        transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
-        transitionTable[i][0] = 1;
-        transitionTable[i][1] = 1;
+        transitionTable.emplace(i, std::unordered_map<unsigned int, unsigned int>());
+        transitionTable[i].emplace(0, 1);
+        transitionTable[i].emplace(1, 1);
     }
     for (char i = 65; i < 91; ++i) {
-        transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
-        transitionTable[i][0] = 1;
-        transitionTable[i][1] = 1;
+        transitionTable.emplace(i, std::unordered_map<unsigned int, unsigned int>());
+        transitionTable[i].emplace(0, 1);
+        transitionTable[i].emplace(1, 1);
     }
     for (char i = 97; i < 123; ++i) {
-        transitionTable[i] = std::unordered_map<unsigned int, unsigned int>();
-        transitionTable[i][0] = 1;
-        transitionTable[i][1] = 1;
+        transitionTable.emplace(i, std::unordered_map<unsigned int, unsigned int>());
+        transitionTable[i].emplace(0, 1);
+        transitionTable[i].emplace(1, 1);
     }
     acceptingStates.insert(1);
 }
@@ -378,8 +378,8 @@ bool ccc::Lexer::run(std::string filePath, std::queue<Token*>& sharedBuffer)
     std::vector<FiniteAutomaton*> automata {
         new StringLiteralAutomaton(),
         new BuiltinTypeAutomaton(),
-        new SemicolonAutomaton,
-        new ScopeAutomaton,
+        new SemicolonAutomaton(),
+        new ScopeAutomaton(),
         new ControlFlowAutomaton(),
         new ArithmeticOpAutomaton(),
         new LogicalOpAutomaton(),

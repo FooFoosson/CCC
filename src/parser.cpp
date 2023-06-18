@@ -10,11 +10,12 @@ ccc::SymbolTable::SymbolTable()
 {
 }
 
-ccc::SymbolTable::~SymbolTable(){
-	while(!symbols.empty()){
-		delete symbols.top();
-		symbols.pop();
-	}
+ccc::SymbolTable::~SymbolTable()
+{
+    while (!symbols.empty()) {
+        delete symbols.top();
+        symbols.pop();
+    }
 }
 
 void ccc::SymbolTable::addScope()
@@ -146,38 +147,37 @@ ccc::Parser::Parser(std::queue<Token*>& sharedBuffer)
 ccc::LL1Parser::LL1Parser(std::queue<Token*>& sharedBuffer)
     : Parser(sharedBuffer)
 {
-    // is emplace better?
-    parsingTable["E"] = std::unordered_map<Terminal, std::vector<std::string>>();
-    parsingTable["E"][Terminal::ID] = std::vector<std::string> { "S", "E'" };
-    parsingTable["E"][Terminal::INT_LITERAL] = std::vector<std::string> { "S", "E'" };
-    parsingTable["E"][Terminal::FLOAT_LITERAL] = std::vector<std::string> { "S", "E'" };
-    parsingTable["E"][Terminal::OPENING_BRACKET] = std::vector<std::string> { "S", "E'" };
+    parsingTable.emplace("E", std::unordered_map<Terminal, std::vector<std::string>>());
+    parsingTable["E"].emplace(Terminal::ID, std::vector<std::string> { "S", "E'" });
+    parsingTable["E"].emplace(Terminal::INT_LITERAL, std::vector<std::string> { "S", "E'" });
+    parsingTable["E"].emplace(Terminal::FLOAT_LITERAL, std::vector<std::string> { "S", "E'" });
+    parsingTable["E"].emplace(Terminal::OPENING_BRACKET, std::vector<std::string> { "S", "E'" });
 
-    parsingTable["S"] = std::unordered_map<Terminal, std::vector<std::string>>();
-    parsingTable["S"][Terminal::ARITHMETIC_OP_PLUS] = std::vector<std::string> { "S", "E'", "+" };
-    parsingTable["S"][Terminal::ARITHMETIC_OP_MINUS] = std::vector<std::string> { "S", "E'", "-" };
-    parsingTable["S"][Terminal::FILE_END] = std::vector<std::string> { "epsilon" };
-    parsingTable["S"][Terminal::CLOSING_BRACKET] = std::vector<std::string> { "epsilon" };
+    parsingTable.emplace("S", std::unordered_map<Terminal, std::vector<std::string>>());
+    parsingTable["S"].emplace(Terminal::ARITHMETIC_OP_PLUS, std::vector<std::string> { "S", "E'", "+" });
+    parsingTable["S"].emplace(Terminal::ARITHMETIC_OP_MINUS, std::vector<std::string> { "S", "E'", "-" });
+    parsingTable["S"].emplace(Terminal::FILE_END, std::vector<std::string> { "epsilon" });
+    parsingTable["S"].emplace(Terminal::CLOSING_BRACKET, std::vector<std::string> { "epsilon" });
 
-    parsingTable["E'"] = std::unordered_map<Terminal, std::vector<std::string>>();
-    parsingTable["E'"][Terminal::ID] = std::vector<std::string> { "F", "T" };
-    parsingTable["E'"][Terminal::INT_LITERAL] = std::vector<std::string> { "F", "T" };
-    parsingTable["E'"][Terminal::FLOAT_LITERAL] = std::vector<std::string> { "F", "T" };
-    parsingTable["E'"][Terminal::OPENING_BRACKET] = std::vector<std::string> { "F", "T" };
+    parsingTable.emplace("E'", std::unordered_map<Terminal, std::vector<std::string>>());
+    parsingTable["E'"].emplace(Terminal::ID, std::vector<std::string> { "F", "T" });
+    parsingTable["E'"].emplace(Terminal::INT_LITERAL, std::vector<std::string> { "F", "T" });
+    parsingTable["E'"].emplace(Terminal::FLOAT_LITERAL, std::vector<std::string> { "F", "T" });
+    parsingTable["E'"].emplace(Terminal::OPENING_BRACKET, std::vector<std::string> { "F", "T" });
 
-    parsingTable["F"] = std::unordered_map<Terminal, std::vector<std::string>>();
-    parsingTable["F"][Terminal::ARITHMETIC_OP_MULT] = std::vector<std::string> { "F", "T", "*" };
-    parsingTable["F"][Terminal::ARITHMETIC_OP_DIV] = std::vector<std::string> { "F", "T", "/" };
-    parsingTable["F"][Terminal::ARITHMETIC_OP_PLUS] = std::vector<std::string> { "epsilon" };
-    parsingTable["F"][Terminal::ARITHMETIC_OP_MINUS] = std::vector<std::string> { "epsilon" };
-    parsingTable["F"][Terminal::FILE_END] = std::vector<std::string> { "epsilon" };
-    parsingTable["F"][Terminal::CLOSING_BRACKET] = std::vector<std::string> { "epsilon" };
+    parsingTable.emplace("F", std::unordered_map<Terminal, std::vector<std::string>>());
+    parsingTable["F"].emplace(Terminal::ARITHMETIC_OP_MULT, std::vector<std::string> { "F", "T", "*" });
+    parsingTable["F"].emplace(Terminal::ARITHMETIC_OP_DIV, std::vector<std::string> { "F", "T", "/" });
+    parsingTable["F"].emplace(Terminal::ARITHMETIC_OP_PLUS, std::vector<std::string> { "epsilon" });
+    parsingTable["F"].emplace(Terminal::ARITHMETIC_OP_MINUS, std::vector<std::string> { "epsilon" });
+    parsingTable["F"].emplace(Terminal::FILE_END, std::vector<std::string> { "epsilon" });
+    parsingTable["F"].emplace(Terminal::CLOSING_BRACKET, std::vector<std::string> { "epsilon" });
 
-    parsingTable["T"] = std::unordered_map<Terminal, std::vector<std::string>>();
-    parsingTable["T"][Terminal::ID] = std::vector<std::string> { "id" };
-    parsingTable["T"][Terminal::INT_LITERAL] = std::vector<std::string> { "int literal" };
-    parsingTable["T"][Terminal::FLOAT_LITERAL] = std::vector<std::string> { "float literal" };
-    parsingTable["T"][Terminal::OPENING_BRACKET] = std::vector<std::string> { ")", "E", "(" };
+    parsingTable.emplace("T", std::unordered_map<Terminal, std::vector<std::string>>());
+    parsingTable["T"].emplace(Terminal::ID, std::vector<std::string> { "id" });
+    parsingTable["T"].emplace(Terminal::INT_LITERAL, std::vector<std::string> { "int literal" });
+    parsingTable["T"].emplace(Terminal::FLOAT_LITERAL, std::vector<std::string> { "float literal" });
+    parsingTable["T"].emplace(Terminal::OPENING_BRACKET, std::vector<std::string> { ")", "E", "(" });
 }
 
 /* void ccc::Parser::addToSymbolTable(Token& token){ */
