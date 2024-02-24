@@ -15,5 +15,5 @@ add_library(ccc_vm OBJECT ${CMAKE_CURRENT_SOURCE_DIR}/src/vm.cpp)
 add_executable(ccc ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 target_link_libraries(ccc ccc_utility ccc_lexer ccc_parser ccc_vm)
 
-add_executable(ccc_lexer_test ${CMAKE_CURRENT_SOURCE_DIR}/tests/lexer_test.cpp)
-target_link_libraries(ccc_lexer_test ccc_utility ccc_lexer ccc_parser ccc_vm)
+add_executable(ccc_integration_test ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_test.cpp)
+target_link_libraries(ccc_integration_test ccc_utility ccc_lexer ccc_parser ccc_vm)

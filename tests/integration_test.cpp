@@ -3,7 +3,7 @@
 #include "vm.h"
 
 int main(){
-	std::string file="../tests/parser_test_file.txt";
+	std::string file="../tests/test_input.txt";
     ccc::SharedBuffer b;
 	ccc::Lexer l;
 	l.run(file, b);
