@@ -2,4 +2,11 @@
 Written for learning purposes using the Dragon Book as reference.
 ## Lexer
 Uses finite state automata for each rule in the grammar outputting a token consisting of a terminal and a lexeme.
-This is done in a multithreaded producer consumer model where the consumer is the parser.
+Outputs a buffer of tokens encapsulated in a semaphore protected producer consumer model class.
+## Parser
+Takes the buffer and using an LL(1) parsing method outputs a syntax tree.
+It then converts the tree to an abstract syntax tree.
+## Interpreter
+Evaluated the AST using a stack-based VM.
+## Main
+Instantiates all three parts while running the lexer and the parser in parallel.
