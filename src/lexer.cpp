@@ -13,30 +13,6 @@ ccc::Token::Token(std::string lexeme, Terminal term)
 {
 }
 
-std::unordered_map<ccc::Terminal, std::string> ccc::Token::terminalNames = {
-    { Terminal::ID, "id" },
-    { Terminal::BUILTIN_TYPE_INT, "int" },
-    { Terminal::BUILTIN_TYPE_FLOAT, "float" },
-    { Terminal::BUILTIN_TYPE_CHAR, "char" },
-    { Terminal::CONTROL_FLOW_BRANCH, "if" },
-    { Terminal::CONTROL_FLOW_WHILE, "while" },
-    { Terminal::ARITHMETIC_OP_PLUS, "+" },
-    { Terminal::ARITHMETIC_OP_MINUS, "-" },
-    { Terminal::ARITHMETIC_OP_MULT, "*" },
-    { Terminal::ARITHMETIC_OP_DIV, "/" },
-    { Terminal::LOGICAL_OP, "logop" },
-    { Terminal::ASSIGNMENT_OP, "=" },
-    { Terminal::INT_LITERAL, "int literal" },
-    { Terminal::FLOAT_LITERAL, "float literal" },
-    { Terminal::STRING_LITERAL, "string literal" },
-    { Terminal::SEMICOLON, ";" },
-    { Terminal::OPEN_SCOPE, "{" },
-    { Terminal::CLOSED_SCOPE, "}" },
-    { Terminal::OPENING_BRACKET, "(" },
-    { Terminal::CLOSING_BRACKET, ")" },
-    { Terminal::FILE_END, "eof" }
-};
-
 bool ccc::Token::operator==(const Token& other) const
 {
     return other.lexeme == lexeme;
@@ -76,7 +52,7 @@ ccc::ArithmeticOpAutomaton::ArithmeticOpAutomaton()
     acceptingStates.insert(4);
 }
 
-ccc::Terminal ccc::ArithmeticOpAutomaton::getTerminal()
+ccc::Terminal ccc::ArithmeticOpAutomaton::getTerminal() const
 {
     switch (currentState) {
     case 1:
@@ -110,7 +86,7 @@ ccc::LogicalOpAutomaton::LogicalOpAutomaton()
     acceptingStates.insert(2);
 }
 
-ccc::Terminal ccc::LogicalOpAutomaton::getTerminal()
+ccc::Terminal ccc::LogicalOpAutomaton::getTerminal() const
 {
     return Terminal::LOGICAL_OP;
 }
@@ -123,7 +99,7 @@ ccc::AssignmentOpAutomaton::AssignmentOpAutomaton()
     acceptingStates.insert(1);
 }
 
-ccc::Terminal ccc::AssignmentOpAutomaton::getTerminal()
+ccc::Terminal ccc::AssignmentOpAutomaton::getTerminal() const
 {
     return Terminal::ASSIGNMENT_OP;
 }
@@ -160,7 +136,7 @@ ccc::BuiltinTypeAutomaton::BuiltinTypeAutomaton()
     acceptingStates.insert(12);
 }
 
-ccc::Terminal ccc::BuiltinTypeAutomaton::getTerminal()
+ccc::Terminal ccc::BuiltinTypeAutomaton::getTerminal() const
 {
     switch (currentState) {
     case 3:
@@ -186,7 +162,7 @@ ccc::IntLiteralAutomaton::IntLiteralAutomaton()
     acceptingStates.insert(1);
 }
 
-ccc::Terminal ccc::IntLiteralAutomaton::getTerminal()
+ccc::Terminal ccc::IntLiteralAutomaton::getTerminal() const
 {
     return Terminal::INT_LITERAL;
 }
@@ -206,7 +182,7 @@ ccc::FloatLiteralAutomaton::FloatLiteralAutomaton()
     acceptingStates.insert(2);
 }
 
-ccc::Terminal ccc::FloatLiteralAutomaton::getTerminal()
+ccc::Terminal ccc::FloatLiteralAutomaton::getTerminal() const
 {
     return Terminal::FLOAT_LITERAL;
 }
@@ -219,7 +195,7 @@ ccc::SemicolonAutomaton::SemicolonAutomaton()
     acceptingStates.insert(1);
 }
 
-ccc::Terminal ccc::SemicolonAutomaton::getTerminal()
+ccc::Terminal ccc::SemicolonAutomaton::getTerminal() const
 {
     return Terminal::SEMICOLON;
 }
@@ -235,7 +211,7 @@ ccc::ScopeAutomaton::ScopeAutomaton()
     acceptingStates.insert(2);
 }
 
-ccc::Terminal ccc::ScopeAutomaton::getTerminal()
+ccc::Terminal ccc::ScopeAutomaton::getTerminal() const
 {
     switch (currentState) {
     case 1:
@@ -258,7 +234,7 @@ ccc::BracketAutomaton::BracketAutomaton()
     acceptingStates.insert(2);
 }
 
-ccc::Terminal ccc::BracketAutomaton::getTerminal()
+ccc::Terminal ccc::BracketAutomaton::getTerminal() const
 {
     switch (currentState) {
     case 1:
@@ -292,7 +268,7 @@ ccc::ControlFlowAutomaton::ControlFlowAutomaton()
     acceptingStates.insert(7);
 }
 
-ccc::Terminal ccc::ControlFlowAutomaton::getTerminal()
+ccc::Terminal ccc::ControlFlowAutomaton::getTerminal() const
 {
     switch (currentState) {
     case 1:
@@ -319,7 +295,7 @@ ccc::StringLiteralAutomaton::StringLiteralAutomaton()
     acceptingStates.insert(2);
 }
 
-ccc::Terminal ccc::StringLiteralAutomaton::getTerminal()
+ccc::Terminal ccc::StringLiteralAutomaton::getTerminal() const
 {
     return Terminal::STRING_LITERAL;
 }
@@ -345,7 +321,7 @@ ccc::IdAutomaton::IdAutomaton()
     acceptingStates.insert(1);
 }
 
-ccc::Terminal ccc::IdAutomaton::getTerminal()
+ccc::Terminal ccc::IdAutomaton::getTerminal() const
 {
     return Terminal::ID;
 }
@@ -354,16 +330,16 @@ ccc::Lexer::Lexer()
 {
 }
 
-static void reloadInputBuffer(unsigned long long& current, unsigned long long starting, unsigned long long& numReadChars, char*& inputBuffer, std::ifstream& file)
+static void reloadInputBuffer(std::streamsize& current, std::streamsize starting, std::streamsize& numReadChars, char*& inputBuffer, std::ifstream& file)
 {
-    unsigned long long end = current - starting + 1;
+    std::streamsize end = current - starting + 1;
     memcpy(inputBuffer, inputBuffer + starting, end);
     file.read(inputBuffer + end, INPUT_BUFFER_SIZE - end);
     numReadChars = end + file.gcount() - 1;
     current = end;
 }
 
-bool ccc::Lexer::run(std::string filePath, std::queue<Token*>& sharedBuffer)
+bool ccc::Lexer::run(const std::string& filePath, SharedBuffer& buffer)
 {
     // TODO: dedicated error codes instead of bool
     std::ifstream file;
@@ -373,39 +349,39 @@ bool ccc::Lexer::run(std::string filePath, std::queue<Token*>& sharedBuffer)
 
     char* inputBuffer = new char[INPUT_BUFFER_SIZE];
     file.read(inputBuffer, INPUT_BUFFER_SIZE);
-    unsigned long long numReadChars = file.gcount() - 1;
+    std::streamsize numReadChars = file.gcount() - 1;
 
     std::vector<FiniteAutomaton*> automata {
-        new StringLiteralAutomaton(),
-        new BuiltinTypeAutomaton(),
-        new SemicolonAutomaton(),
-        new ScopeAutomaton(),
-        new ControlFlowAutomaton(),
-        new ArithmeticOpAutomaton(),
-        new LogicalOpAutomaton(),
-        new AssignmentOpAutomaton(),
-        new FloatLiteralAutomaton(),
-        new IntLiteralAutomaton(),
-        new IdAutomaton()
+        new StringLiteralAutomaton {},
+        new BuiltinTypeAutomaton {},
+        new SemicolonAutomaton {},
+        new ScopeAutomaton {},
+        new BracketAutomaton {},
+        new ControlFlowAutomaton {},
+        new ArithmeticOpAutomaton {},
+        new LogicalOpAutomaton {},
+        new AssignmentOpAutomaton {},
+        new FloatLiteralAutomaton {},
+        new IntLiteralAutomaton {},
+        new IdAutomaton {}
     };
 
-    for (unsigned long long i = 0; i < numReadChars; ++i) {
+    for (std::streamsize i = 0; i < numReadChars; ++i) {
         // TODO: support windows CR-LF for new line
         if (inputBuffer[i] == ' ' || inputBuffer[i] == '\t' || inputBuffer[i] == '\n')
             continue;
-        FiniteAutomaton* dfa;
         for (FiniteAutomaton* dfa : automata) {
-            unsigned long long starting = i;
+            std::streamsize starting = i;
             while (dfa->transition(inputBuffer[i])) {
-                if (i == numReadChars - 1 && !file.eof())
+                if (i == INPUT_BUFFER_SIZE - 1 && !file.eof())
                     reloadInputBuffer(i, starting, numReadChars, inputBuffer, file);
                 else if (i++ == numReadChars - 1)
                     break;
             }
             if (dfa->acceptingStates.find(dfa->currentState) != dfa->acceptingStates.end()) {
-                sharedBuffer.push(new Token(
+                buffer.produce(new Token {
                     std::string(inputBuffer + starting, i - starting) /* Copy elision */,
-                    dfa->getTerminal()));
+                    dfa->getTerminal() });
                 --i;
                 dfa->currentState = 0;
                 break;
@@ -416,9 +392,8 @@ bool ccc::Lexer::run(std::string filePath, std::queue<Token*>& sharedBuffer)
             i = starting;
         }
     }
-    sharedBuffer.push(new Token("eof", Terminal::FILE_END));
+    buffer.produce(new Token { "eof", Terminal::FILE_END });
 
-    file.close();
     delete[] inputBuffer;
     for (FiniteAutomaton* dfa : automata)
         delete dfa;
