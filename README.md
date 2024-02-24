@@ -10,3 +10,10 @@ It then converts the tree to an abstract syntax tree.
 Evaluates the AST using a stack-based VM.
 ## Main
 Instantiates all three parts while running the lexer and the parser in parallel.
+## Usage
+```
+mkdir build && cd build
+cmake ../
+make
+./ccc path_to_input_file
+```
